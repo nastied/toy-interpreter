@@ -9,7 +9,7 @@ import interpreter.model.value.StringValue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-
+/**Looks up the filename in the FileTable to retrieve the active reader, reads exactly one line, and tries to parse it into an integer. It then updates or creates a variable in your SymTable with that integer (or 0 if it reaches the end of the file).
 /**
  * Rule S9: readFile(Exp, Id) -> read a line with the reader of Eval(Exp); n = 0 at the end of the file,
  * otherwise n = the integer on the line; update Id -> n in the SymTable.

@@ -7,6 +7,7 @@ import interpreter.model.stmt.IStmt;
 import interpreter.repository.IRepository;
 
 import java.io.PrintStream;
+/**The allStep() loop is updated to trigger the repository's logger once for the initial state, and then again after every single oneStep().*/
 
 public class Controller {
     private final IRepository repo; // interface type: the implementation can be replaced

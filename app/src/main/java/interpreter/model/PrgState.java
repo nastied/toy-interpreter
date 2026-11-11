@@ -12,7 +12,7 @@ import interpreter.model.value.StringValue;
 
 import java.io.BufferedReader;
 import java.util.stream.Collectors;
-
+/**The toLogString() method formats the four data structures into the exact multi-line text format required by the lab, using a StringBuilder.
 /** The state of one executed program: ExeStack, SymTable, Out and FileTable (plus the original program). */
 public class PrgState {
     private IStack<IStmt> exeStack;

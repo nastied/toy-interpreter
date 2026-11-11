@@ -7,7 +7,7 @@ import interpreter.model.exp.IExp;
 import interpreter.model.value.StringValue;
 
 import java.io.IOException;
-
+/**Retrieves the active reader from the FileTable, closes the file stream to free up system memory, and removes the file's entry from the FileTable.
 /** Rule S10: closeRFile(Exp) -> close the reader of Eval(Exp) and remove the file from the FileTable. */
 public record CloseRFileStmt(IExp exp) implements IStmt {
     @Override

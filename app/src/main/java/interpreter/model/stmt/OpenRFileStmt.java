@@ -9,7 +9,7 @@ import interpreter.model.value.StringValue;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
+/**Evaluates a string expression to get a filename, creates a Java BufferedReader to read that file, and saves the reader into the new FileTable dictionary so other statements can use it.
 /** Rule S8: openRFile(Exp) -> open the file named Eval(Exp) and add name -> reader to the FileTable. */
 public record OpenRFileStmt(IExp exp) implements IStmt {
     @Override

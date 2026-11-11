@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+/**The logPrgStateExec() method handles the actual writing. It opens the text file in "append" mode (true) so it doesn't overwrite previous steps, dumps the toLogString() text into it, and uses a try-with-resources block to guarantee the file is closed even if the interpreter crashes.*/
 
 public class Repository implements IRepository {
     // a list, because later the repository will hold the states of several threads
