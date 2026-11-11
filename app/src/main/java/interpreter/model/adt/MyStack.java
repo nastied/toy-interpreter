@@ -3,7 +3,10 @@ package interpreter.model.adt;
 import interpreter.exceptions.ADTException;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MyStack<T> implements IStack<T> {
@@ -25,6 +28,10 @@ public class MyStack<T> implements IStack<T> {
         return stack.isEmpty();
     }
 
+    @Override
+    public List<T> toList() {
+        return Collections.unmodifiableList(new ArrayList<>(stack)); // iterates from the head = the top
+    }
 
     @Override
     public String toString() {

@@ -2,12 +2,13 @@ package interpreter.model.adt;
 
 import interpreter.exceptions.ADTException;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MyDictionary<K, V> implements IDictionary<K, V> {
-    // a HashMap that remembers the insertion order, so the displayed states are deterministic
+    // a HashMap that remembers the insertion order, so the displayed states and the log are deterministic
     private final Map<K, V> map = new LinkedHashMap<>();
 
     @Override
@@ -32,6 +33,16 @@ public class MyDictionary<K, V> implements IDictionary<K, V> {
         map.put(key, value);
     }
 
+    @Override
+    public void remove(K key) throws ADTException {
+        if (!map.containsKey(key)) throw new ADTException("key " + key + " is not defined");
+        map.remove(key);
+    }
+
+    @Override
+    public Map<K, V> toMap() {
+        return Collections.unmodifiableMap(new LinkedHashMap<>(map));
+    }
 
     @Override
     public String toString() {

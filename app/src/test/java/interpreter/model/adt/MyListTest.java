@@ -62,4 +62,26 @@ class MyListTest {
     void toStringOfEmptyList() {
         assertEquals("{}", list.toString());
     }
+
+    @Test
+    void toListIsInInsertionOrder() {
+        list.add(3);
+        list.add(1);
+        list.add(2);
+        assertEquals(java.util.List.of(3, 1, 2), list.toList());
+    }
+
+    @Test
+    void toListOfAnEmptyListIsEmpty() {
+        assertTrue(list.toList().isEmpty());
+    }
+
+    @Test
+    void toListIsAReadOnlyCopy() {
+        list.add(1);
+        var copy = list.toList();
+        assertThrows(UnsupportedOperationException.class, () -> copy.add(2));
+        list.add(2);
+        assertEquals(1, copy.size());
+    }
 }

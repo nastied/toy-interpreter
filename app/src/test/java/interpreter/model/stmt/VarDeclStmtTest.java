@@ -61,4 +61,15 @@ class VarDeclStmtTest {
         assertEquals("int v", new VarDeclStmt("v", new IntType()).toString());
         assertEquals("bool b", new VarDeclStmt("b", new BoolType()).toString());
     }
+
+    @Test
+    void declaringAStringVariableGivesItTheEmptyString() throws MyException {
+        new VarDeclStmt("s", new interpreter.model.type.StringType()).execute(state);
+        assertEquals(new interpreter.model.value.StringValue(""), state.getSymTable().lookup("s"));
+    }
+
+    @Test
+    void toStringOfAStringDeclaration() {
+        assertEquals("string s", new VarDeclStmt("s", new interpreter.model.type.StringType()).toString());
+    }
 }

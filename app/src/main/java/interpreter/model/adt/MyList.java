@@ -3,6 +3,7 @@ package interpreter.model.adt;
 import interpreter.exceptions.ADTException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,10 @@ public class MyList<T> implements IList<T> {
         return list.size();
     }
 
+    @Override
+    public List<T> toList() {
+        return Collections.unmodifiableList(new ArrayList<>(list));
+    }
 
     @Override
     public String toString() {

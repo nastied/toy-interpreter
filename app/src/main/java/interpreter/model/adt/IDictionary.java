@@ -2,6 +2,8 @@ package interpreter.model.adt;
 
 import interpreter.exceptions.ADTException;
 
+import java.util.Map;
+
 public interface IDictionary<K, V> {
     boolean isDefined(K key);
 
@@ -13,4 +15,10 @@ public interface IDictionary<K, V> {
 
     /** Replaces the value of an existing key. @throws ADTException if the key is not defined */
     void update(K key, V value) throws ADTException;
+
+    /** Removes the binding of the key. @throws ADTException if the key is not defined */
+    void remove(K key) throws ADTException;
+
+    /** A read-only copy of the bindings, in insertion order (used by closeRFile's tests and the log file). */
+    Map<K, V> toMap();
 }

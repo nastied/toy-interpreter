@@ -80,4 +80,23 @@ class AssignStmtTest {
     void toStringShowsTheAssignment() {
         assertEquals("v = 2", new AssignStmt("v", num(2)).toString());
     }
+
+    @Test
+    void assignsAStringToAStringVariable() throws MyException {
+        new VarDeclStmt("s", new interpreter.model.type.StringType()).execute(state);
+        new AssignStmt("s", interpreter.TestSupport.str("hello")).execute(state);
+        assertEquals(new interpreter.model.value.StringValue("hello"), state.getSymTable().lookup("s"));
+    }
+
+    @Test
+    void assigningAnIntegerToAStringVariableThrows() throws MyException {
+        new VarDeclStmt("s", new interpreter.model.type.StringType()).execute(state);
+        assertThrows(StatementException.class, () -> new AssignStmt("s", num(1)).execute(state));
+    }
+
+    @Test
+    void assigningAStringToAnIntVariableThrows() {
+        assertThrows(StatementException.class,
+                () -> new AssignStmt("v", interpreter.TestSupport.str("1")).execute(state));
+    }
 }
