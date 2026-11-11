@@ -11,9 +11,9 @@ public record CompStmt(IStmt first, IStmt second) implements IStmt {
         return state;
     }
 
-    /** The outermost level has no parentheses: {int v | v = 2; print(v)}; nested compounds do. */
+    /** Infix form: left - root - right, e.g. (a = 1; print(a)). */
     @Override
     public String toString() {
-        return StmtFormat.nested(first) + "; " + StmtFormat.nested(second);
+        return "(" + first + "; " + second + ")";
     }
 }

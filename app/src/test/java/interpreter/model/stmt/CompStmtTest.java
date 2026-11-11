@@ -35,8 +35,8 @@ class CompStmtTest {
     }
 
     @Test
-    void toStringHasNoOuterParenthesesButNestedCompoundsHaveThem() {
+    void toStringIsTheInfixFormWithParentheses() {
         IStmt s = new CompStmt(new NopStmt(), new CompStmt(new NopStmt(), new NopStmt()));
-        assertEquals("nop; (nop; nop)", s.toString());
+        assertEquals("(nop; (nop; nop))", s.toString());
     }
 }

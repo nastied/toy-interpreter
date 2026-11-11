@@ -18,6 +18,6 @@ public record IfStmt(IExp cond, IStmt thenS, IStmt elseS) implements IStmt {
 
     @Override
     public String toString() {
-        return "(if " + cond + " then " + StmtFormat.nested(thenS) + " else " + StmtFormat.nested(elseS) + ")";
+        return "(if (" + cond + ") then (" + thenS + ") else (" + elseS + "))";
     }
 }

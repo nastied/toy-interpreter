@@ -57,12 +57,12 @@ class IfStmtTest {
 
     @Test
     void toStringShowsBothBranches() {
-        assertEquals("(if true then print(1) else print(2))", new IfStmt(bool(true), thenS, elseS).toString());
+        assertEquals("(if (true) then (print(1)) else (print(2)))", new IfStmt(bool(true), thenS, elseS).toString());
     }
 
     @Test
-    void compoundBranchesAreParenthesisedInToString() {
+    void compoundBranchesAreShownInfixInToString() {
         IStmt s = new IfStmt(bool(true), new CompStmt(thenS, thenS), elseS);
-        assertEquals("(if true then (print(1); print(1)) else print(2))", s.toString());
+        assertEquals("(if (true) then ((print(1); print(1))) else (print(2)))", s.toString());
     }
 }
