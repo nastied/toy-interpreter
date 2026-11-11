@@ -26,7 +26,7 @@ public class MyList<T> implements IList<T> {
         return list.size();
     }
 
-    /** As in the lab notation: {1, 2}. */
+
     @Override
     public String toString() {
         return list.stream().map(String::valueOf).collect(Collectors.joining(", ", "{", "}"));

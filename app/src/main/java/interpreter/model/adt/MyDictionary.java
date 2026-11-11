@@ -32,7 +32,7 @@ public class MyDictionary<K, V> implements IDictionary<K, V> {
         map.put(key, value);
     }
 
-    /** As in the lab notation: {v -> 2, a -> false}. */
+
     @Override
     public String toString() {
         return map.entrySet().stream()

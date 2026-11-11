@@ -8,4 +8,3 @@ public class Main {
         new TextMenu(Examples.all(), System.in, System.out).run();
     }
 }
-1

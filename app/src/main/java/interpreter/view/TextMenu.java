@@ -14,7 +14,7 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Scanner;
 
-/** Text menu: select one of the programs, run the selected program completely. Errors never crash it. */
+
 public class TextMenu {
     private final List<IStmt> programs;
     private final Scanner in;
@@ -48,7 +48,7 @@ public class TextMenu {
         out.println();
         out.println("=== Toy-language interpreter ===");
         out.println("1. Select a program" + (selected >= 0 ? " (selected: " + (selected + 1) + ")" : ""));
-        out.println("2. Run the selected program");
+        out.println("2. Run");
         out.println("0. Exit");
         out.print("Option: ");
         out.flush();

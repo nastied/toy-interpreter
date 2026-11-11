@@ -17,7 +17,6 @@ import interpreter.model.value.IntValue;
 
 import java.util.List;
 
-/** The hard-coded example programs of section 2.2, written as trees of Java objects. */
 public final class Examples {
     private Examples() {
     }
