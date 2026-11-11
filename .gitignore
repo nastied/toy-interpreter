@@ -10,3 +10,6 @@ build
 out/
 .vscode/
 .DS_Store
+
+# Log files written by the interpreter
+log*.txt
