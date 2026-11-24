@@ -1,9 +1,11 @@
 package interpreter.model;
 
 import interpreter.model.adt.IDictionary;
+import interpreter.model.adt.IHeap;
 import interpreter.model.adt.IList;
 import interpreter.model.adt.IStack;
 import interpreter.model.adt.MyDictionary;
+import interpreter.model.adt.MyHeap;
 import interpreter.model.adt.MyList;
 import interpreter.model.adt.MyStack;
 import interpreter.model.stmt.IStmt;
@@ -11,24 +13,26 @@ import interpreter.model.value.IValue;
 import interpreter.model.value.StringValue;
 
 import java.io.BufferedReader;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
-/**The toLogString() method formats the four data structures into the exact multi-line text format required by the lab, using a StringBuilder.
-/** The state of one executed program: ExeStack, SymTable, Out and FileTable (plus the original program). */
+/** The state of one executed program: ExeStack, SymTable, Out, FileTable and Heap (plus the original program). */
 public class PrgState {
     private IStack<IStmt> exeStack;
     private IDictionary<String, IValue> symTable;
     private IList<IValue> out;
     private IDictionary<StringValue, BufferedReader> fileTable; // new in A3: file name -> reader
+    private IHeap heap; // new in A4: address -> value
     private final IStmt originalProgram; // statements are immutable records, so no deep copy is needed
 
     /** Initially the execution stack contains the whole program. */
     public PrgState(IStack<IStmt> exeStack, IDictionary<String, IValue> symTable,
-                    IList<IValue> out, IDictionary<StringValue, BufferedReader> fileTable,
+                    IList<IValue> out, IDictionary<StringValue, BufferedReader> fileTable, IHeap heap,
                     IStmt program) {
         this.exeStack = exeStack;
         this.symTable = symTable;
         this.out = out;
         this.fileTable = fileTable;
+        this.heap = heap;
         this.originalProgram = program;
         exeStack.push(program);
     }
@@ -36,7 +40,7 @@ public class PrgState {
     /** A state with empty structures: when a structure is added later, only this factory changes. */
     public static PrgState of(IStmt program) {
         return new PrgState(new MyStack<>(), new MyDictionary<>(), new MyList<>(),
-                new MyDictionary<>(), program);
+                new MyDictionary<>(), new MyHeap(), program);
     }
 
     public IStack<IStmt> getExeStack() {
@@ -71,6 +75,14 @@ public class PrgState {
         this.fileTable = fileTable;
     }
 
+    public IHeap getHeap() {
+        return heap;
+    }
+
+    public void setHeap(IHeap heap) {
+        this.heap = heap;
+    }
+
     public IStmt getOriginalProgram() {
         return originalProgram;
     }
@@ -79,7 +91,7 @@ public class PrgState {
     @Override
     public String toString() {
         return "ExeStack: " + exeStack + "\nSymTable: " + symTable + "\nOut: " + out
-                + "\nFileTable: " + fileTableToString();
+                + "\nFileTable: " + fileTableToString() + "\nHeap: " + heap;
     }
 
     /** The lab notation {"test.in" -> reader}; the readers themselves have no readable text form. */
@@ -89,7 +101,7 @@ public class PrgState {
                 .collect(Collectors.joining(", ", "{", "}"));
     }
 
-    /** The format of the log file (section 2.6): four sections, one element per line, stack top first. */
+    /** The format of the log file: five sections, one element per line, stack top first. */
     public String toLogString() {
         var sb = new StringBuilder();
         sb.append("ExeStack:\n");
@@ -100,6 +112,8 @@ public class PrgState {
         out.toList().forEach(v -> sb.append(v).append('\n'));
         sb.append("FileTable:\n");
         fileTable.toMap().keySet().forEach(f -> sb.append(f.val()).append('\n'));
+        sb.append("Heap:\n");
+        new TreeMap<>(heap.getContent()).forEach((a, v) -> sb.append(a).append(" --> ").append(v).append('\n'));
         return sb.toString();
     }
 }

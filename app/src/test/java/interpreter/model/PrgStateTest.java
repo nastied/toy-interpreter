@@ -64,7 +64,7 @@ class PrgStateTest {
         PrgState state = PrgState.of(new NopStmt());
         state.getSymTable().put("v", new IntValue(2));
         state.getOut().add(new IntValue(1));
-        assertEquals("ExeStack: {nop}\nSymTable: {v -> 2}\nOut: {1}\nFileTable: {}", state.toString());
+        assertEquals("ExeStack: {nop}\nSymTable: {v -> 2}\nOut: {1}\nFileTable: {}\nHeap: {}", state.toString());
     }
 
     @Test
@@ -97,7 +97,7 @@ class PrgStateTest {
     void toStringShowsTheOpenFilesInTheLabNotation() {
         PrgState state = PrgState.of(new NopStmt());
         state.getFileTable().put(new StringValue("test.in"), new BufferedReader(new StringReader("")));
-        assertTrue(state.toString().endsWith("FileTable: {\"test.in\" -> reader}"));
+        assertTrue(state.toString().contains("FileTable: {\"test.in\" -> reader}"));
     }
 
     @Test
@@ -111,6 +111,8 @@ class PrgStateTest {
         state.getOut().add(new IntValue(1));
         state.getOut().add(new BoolValue(true));
         state.getFileTable().put(new StringValue("test.in"), new BufferedReader(new StringReader("")));
+        state.getHeap().allocate(new IntValue(20));
+        state.getHeap().allocate(new interpreter.model.value.RefValue(1, new interpreter.model.type.IntType()));
         assertEquals("""
                 ExeStack:
                 nop
@@ -123,6 +125,9 @@ class PrgStateTest {
                 true
                 FileTable:
                 test.in
+                Heap:
+                1 --> 20
+                2 --> (1, int)
                 """, state.toLogString());
     }
 
@@ -130,6 +135,50 @@ class PrgStateTest {
     void toLogStringOfAnEmptyStateHasEmptySections() throws MyException {
         PrgState state = PrgState.of(new NopStmt());
         state.getExeStack().pop();
-        assertEquals("ExeStack:\nSymTable:\nOut:\nFileTable:\n", state.toLogString());
+        assertEquals("ExeStack:\nSymTable:\nOut:\nFileTable:\nHeap:\n", state.toLogString());
+    }
+
+    @Test
+    void ofCreatesAnEmptyHeap() {
+        PrgState state = PrgState.of(program);
+        assertNotNull(state.getHeap());
+        assertTrue(state.getHeap().getContent().isEmpty());
+    }
+
+    @Test
+    void everyStateHasItsOwnHeap() {
+        PrgState a = PrgState.of(program);
+        PrgState b = PrgState.of(program);
+        a.getHeap().allocate(new IntValue(1));
+        assertTrue(b.getHeap().getContent().isEmpty());
+    }
+
+    @Test
+    void setHeapReplacesTheHeap() {
+        PrgState state = PrgState.of(program);
+        var other = new interpreter.model.adt.MyHeap();
+        state.setHeap(other);
+        assertSame(other, state.getHeap());
+    }
+
+    @Test
+    void toStringShowsTheHeapInTheLabNotation() {
+        PrgState state = PrgState.of(new NopStmt());
+        state.getHeap().allocate(new IntValue(20));
+        assertTrue(state.toString().endsWith("Heap: {1 -> 20}"));
+    }
+
+    @Test
+    void toLogStringListsTheHeapSortedByNumericAddress() {
+        PrgState state = PrgState.of(new NopStmt());
+        state.getHeap().setContent(java.util.Map.of(10, new IntValue(10), 2, new IntValue(2), 1, new IntValue(1)));
+        String log = state.toLogString();
+        assertTrue(log.endsWith("Heap:\n1 --> 1\n2 --> 2\n10 --> 10\n")); // 2 comes before 10
+    }
+
+    @Test
+    void theHeapSectionComesAfterTheFileTableSection() {
+        String log = PrgState.of(new NopStmt()).toLogString();
+        assertTrue(log.indexOf("FileTable:") < log.indexOf("Heap:"));
     }
 }

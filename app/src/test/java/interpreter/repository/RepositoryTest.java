@@ -42,7 +42,7 @@ class RepositoryTest {
         IRepository repo = new Repository(PrgState.of(new NopStmt()), logPath());
         repo.logPrgStateExec();
         // a state is followed by an empty line
-        assertEquals(List.of("ExeStack:", "nop", "SymTable:", "Out:", "FileTable:", ""),
+        assertEquals(List.of("ExeStack:", "nop", "SymTable:", "Out:", "FileTable:", "Heap:", ""),
                 Files.readAllLines(dir.resolve("log.txt")));
     }
 

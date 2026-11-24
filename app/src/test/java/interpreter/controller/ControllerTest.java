@@ -262,12 +262,12 @@ class ControllerTest {
     @Test
     void example1DisplaysTheStateAfterEveryStep() throws MyException {
         List<String> expected = List.of(
-                "ExeStack: {(int v; (v = 2; print(v)))}", "SymTable: {}", "Out: {}", "FileTable: {}", "",
-                "ExeStack: {int v | (v = 2; print(v))}", "SymTable: {}", "Out: {}", "FileTable: {}", "",
-                "ExeStack: {(v = 2; print(v))}", "SymTable: {v -> 0}", "Out: {}", "FileTable: {}", "",
-                "ExeStack: {v = 2 | print(v)}", "SymTable: {v -> 0}", "Out: {}", "FileTable: {}", "",
-                "ExeStack: {print(v)}", "SymTable: {v -> 2}", "Out: {}", "FileTable: {}", "",
-                "ExeStack: {}", "SymTable: {v -> 2}", "Out: {2}", "FileTable: {}", "");
+                "ExeStack: {(int v; (v = 2; print(v)))}", "SymTable: {}", "Out: {}", "FileTable: {}", "Heap: {}", "",
+                "ExeStack: {int v | (v = 2; print(v))}", "SymTable: {}", "Out: {}", "FileTable: {}", "Heap: {}", "",
+                "ExeStack: {(v = 2; print(v))}", "SymTable: {v -> 0}", "Out: {}", "FileTable: {}", "Heap: {}", "",
+                "ExeStack: {v = 2 | print(v)}", "SymTable: {v -> 0}", "Out: {}", "FileTable: {}", "Heap: {}", "",
+                "ExeStack: {print(v)}", "SymTable: {v -> 2}", "Out: {}", "FileTable: {}", "Heap: {}", "",
+                "ExeStack: {}", "SymTable: {v -> 2}", "Out: {2}", "FileTable: {}", "Heap: {}", "");
         assertEquals(expected, display(Examples.EX1).lines().toList());
     }
 
@@ -290,21 +290,21 @@ class ControllerTest {
     // ----- log file -----
 
     @Test
-    void logFileContainsTheFourSectionsInOrder() throws Exception {
+    void logFileContainsTheFiveSectionsInOrder() throws Exception {
         run(Examples.EX1);
         String log = Files.readString(logFile());
         int a = log.indexOf("ExeStack:"), b = log.indexOf("SymTable:"),
-                c = log.indexOf("Out:"), d = log.indexOf("FileTable:");
-        assertTrue(0 <= a && a < b && b < c && c < d);
+                c = log.indexOf("Out:"), d = log.indexOf("FileTable:"), e = log.indexOf("Heap:");
+        assertTrue(0 <= a && a < b && b < c && c < d && d < e);
     }
 
     @Test
-    void everyStateInTheLogHasTheFourSectionsInOrder() throws Exception {
+    void everyStateInTheLogHasTheFiveSectionsInOrder() throws Exception {
         run(Examples.EX2);
         String[] states = Files.readString(logFile()).split("\n\n");
         for (String state : states) {
             List<String> headers = state.lines().filter(l -> l.endsWith(":") && !l.contains(" ")).toList();
-            assertEquals(List.of("ExeStack:", "SymTable:", "Out:", "FileTable:"), headers);
+            assertEquals(List.of("ExeStack:", "SymTable:", "Out:", "FileTable:", "Heap:"), headers);
         }
     }
 
@@ -319,12 +319,12 @@ class ControllerTest {
     void logFileOfExample1HasTheExpectedContent() throws Exception {
         run(Examples.EX1);
         List<String> expected = List.of(
-                "ExeStack:", "(int v; (v = 2; print(v)))", "SymTable:", "Out:", "FileTable:", "",
-                "ExeStack:", "int v", "(v = 2; print(v))", "SymTable:", "Out:", "FileTable:", "",
-                "ExeStack:", "(v = 2; print(v))", "SymTable:", "v --> 0", "Out:", "FileTable:", "",
-                "ExeStack:", "v = 2", "print(v)", "SymTable:", "v --> 0", "Out:", "FileTable:", "",
-                "ExeStack:", "print(v)", "SymTable:", "v --> 2", "Out:", "FileTable:", "",
-                "ExeStack:", "SymTable:", "v --> 2", "Out:", "2", "FileTable:", "");
+                "ExeStack:", "(int v; (v = 2; print(v)))", "SymTable:", "Out:", "FileTable:", "Heap:", "",
+                "ExeStack:", "int v", "(v = 2; print(v))", "SymTable:", "Out:", "FileTable:", "Heap:", "",
+                "ExeStack:", "(v = 2; print(v))", "SymTable:", "v --> 0", "Out:", "FileTable:", "Heap:", "",
+                "ExeStack:", "v = 2", "print(v)", "SymTable:", "v --> 0", "Out:", "FileTable:", "Heap:", "",
+                "ExeStack:", "print(v)", "SymTable:", "v --> 2", "Out:", "FileTable:", "Heap:", "",
+                "ExeStack:", "SymTable:", "v --> 2", "Out:", "2", "FileTable:", "Heap:", "");
         assertEquals(expected, Files.readAllLines(logFile()));
     }
 
@@ -336,7 +336,7 @@ class ControllerTest {
         assertTrue(log.contains("varf --> \"" + in + "\"\n"));
         assertTrue(log.contains("FileTable:\n" + in + "\n")); // the file is listed while it is open
         assertTrue(log.contains("Out:\n15\n50\n"));
-        assertTrue(log.stripTrailing().endsWith("FileTable:")); // the last state: the file is closed
+        assertTrue(log.stripTrailing().endsWith("FileTable:\nHeap:")); // the last state: the file is closed
     }
 
     @Test
