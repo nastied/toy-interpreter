@@ -10,7 +10,7 @@ import java.io.PrintStream;
 /**The allStep() loop is updated to trigger the repository's logger once for the initial state, and then again after every single oneStep().*/
 
 import static interpreter.controller.GarbageCollector.getAddrFromSymTable;
-import static interpreter.controller.GarbageCollector.unsafeGarbageCollector;
+import static interpreter.controller.GarbageCollector.safeGarbageCollector;
 
 public class Controller {
     private final IRepository repo; // interface type: the implementation can be replaced
@@ -53,7 +53,7 @@ public class Controller {
     }
 
     private void collectGarbage(PrgState prg) {
-        prg.getHeap().setContent(unsafeGarbageCollector(
+        prg.getHeap().setContent(safeGarbageCollector(
                 getAddrFromSymTable(prg.getSymTable().toMap().values()),
                 prg.getHeap().getContent()));
     }

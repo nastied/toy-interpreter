@@ -418,4 +418,34 @@ class ControllerTest {
         IStmt program = new CompStmt(new VarDeclStmt("v", new RefType(new IntType())), new NewStmt("v", num(5)));
         assertEquals("{1 -> 5}", run(program).getHeap().toString());
     }
+
+    /** Ref int v; new(v, 20); Ref Ref int a; new(a, v); new(v, 30); print(rH(rH(a))) - the program of Ex9. */
+    private static IStmt programNeedingTheSafeCollector() {
+        var refInt = new RefType(new IntType());
+        return new CompStmt(new VarDeclStmt("v", refInt),
+                new CompStmt(new NewStmt("v", num(20)),
+                        new CompStmt(new VarDeclStmt("a", new RefType(refInt)),
+                                new CompStmt(new NewStmt("a", new VarExp("v")),
+                                        new CompStmt(new NewStmt("v", num(30)),
+                                                new PrintStmt(new interpreter.model.exp.ReadHeapExp(
+                                                        new interpreter.model.exp.ReadHeapExp(new VarExp("a")))))))));
+    }
+
+    @Test
+    void aLocationReachableOnlyThroughTheHeapSurvivesTheCollectionSoThePrintWorks() throws Exception {
+        PrgState state = run(programNeedingTheSafeCollector());
+        assertEquals("{20}", state.getOut().toString());
+        assertEquals("{1 -> 20, 2 -> (1, int), 3 -> 30}", state.getHeap().toString());
+    }
+
+    @Test
+    void theLogShowsThatTheCollectionKeepsTheLocationReachableThroughTheHeap() throws Exception {
+        run(programNeedingTheSafeCollector());
+        // the state after new(v, 30) is logged twice (before and after the collection): both have 3 locations
+        String log = Files.readString(logFile());
+        String marker = "ExeStack:\nprint(rH(rH(a)))\nSymTable:";
+        assertEquals(2, log.split(java.util.regex.Pattern.quote(marker), -1).length - 1);
+        for (String state : log.split("\n\n"))
+            if (state.startsWith(marker)) assertTrue(state.contains("Heap:\n1 --> 20\n2 --> (1, int)\n3 --> 30"));
+    }
 }
