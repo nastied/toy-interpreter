@@ -9,6 +9,9 @@ import interpreter.repository.IRepository;
 import java.io.PrintStream;
 /**The allStep() loop is updated to trigger the repository's logger once for the initial state, and then again after every single oneStep().*/
 
+import static interpreter.controller.GarbageCollector.getAddrFromSymTable;
+import static interpreter.controller.GarbageCollector.unsafeGarbageCollector;
+
 public class Controller {
     private final IRepository repo; // interface type: the implementation can be replaced
     private final boolean displayFlag;
@@ -32,16 +35,27 @@ public class Controller {
         return crtStmt.execute(state);
     }
 
-    /** Executes the current program until its ExeStack is empty, logging the initial state and every step. */
+    /**
+     * Executes the current program until its ExeStack is empty. The initial state is logged, and after every
+     * step the state is logged, the garbage collector runs and the state is logged again.
+     */
     public void allStep() throws MyException {
         PrgState prg = repo.getCrtPrg();
         repo.logPrgStateExec();
         display(prg); // only if the display flag is on
         while (!prg.getExeStack().isEmpty()) {
             oneStep(prg);
-            repo.logPrgStateExec();
+            repo.logPrgStateExec(); // after the step, before the collection
+            collectGarbage(prg);
+            repo.logPrgStateExec(); // after the collection
             display(prg);
         }
+    }
+
+    private void collectGarbage(PrgState prg) {
+        prg.getHeap().setContent(unsafeGarbageCollector(
+                getAddrFromSymTable(prg.getSymTable().toMap().values()),
+                prg.getHeap().getContent()));
     }
 
     private void display(PrgState state) {

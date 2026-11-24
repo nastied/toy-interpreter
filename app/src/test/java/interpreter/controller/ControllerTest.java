@@ -10,10 +10,13 @@ import interpreter.model.stmt.CloseRFileStmt;
 import interpreter.model.stmt.CompStmt;
 import interpreter.model.stmt.IStmt;
 import interpreter.model.stmt.NopStmt;
+import interpreter.model.stmt.NewStmt;
 import interpreter.model.stmt.OpenRFileStmt;
 import interpreter.model.stmt.PrintStmt;
 import interpreter.model.stmt.ReadFileStmt;
 import interpreter.model.type.IntType;
+import interpreter.model.value.RefValue;
+import interpreter.model.type.RefType;
 import interpreter.model.stmt.VarDeclStmt;
 import interpreter.model.value.BoolValue;
 import interpreter.model.value.IntValue;
@@ -309,22 +312,39 @@ class ControllerTest {
     }
 
     @Test
-    void logFileHasTheInitialStateAndOneStatePerStep() throws Exception {
-        run(Examples.EX1); // 5 steps
+    void logFileHasTheInitialStateAndTwoStatesPerStep() throws Exception {
+        run(Examples.EX1); // 5 steps: the initial state, then (before and after the collection) twice per step
         String log = Files.readString(logFile());
-        assertEquals(6, log.split("ExeStack:", -1).length - 1);
+        assertEquals(11, log.split("ExeStack:", -1).length - 1);
+    }
+
+    private static List<String> logBlock(List<String> stack, List<String> sym, List<String> out) {
+        List<String> block = new ArrayList<>();
+        block.add("ExeStack:");
+        block.addAll(stack);
+        block.add("SymTable:");
+        block.addAll(sym);
+        block.add("Out:");
+        block.addAll(out);
+        block.addAll(List.of("FileTable:", "Heap:", "")); // a state is followed by an empty line
+        return block;
     }
 
     @Test
     void logFileOfExample1HasTheExpectedContent() throws Exception {
         run(Examples.EX1);
-        List<String> expected = List.of(
-                "ExeStack:", "(int v; (v = 2; print(v)))", "SymTable:", "Out:", "FileTable:", "Heap:", "",
-                "ExeStack:", "int v", "(v = 2; print(v))", "SymTable:", "Out:", "FileTable:", "Heap:", "",
-                "ExeStack:", "(v = 2; print(v))", "SymTable:", "v --> 0", "Out:", "FileTable:", "Heap:", "",
-                "ExeStack:", "v = 2", "print(v)", "SymTable:", "v --> 0", "Out:", "FileTable:", "Heap:", "",
-                "ExeStack:", "print(v)", "SymTable:", "v --> 2", "Out:", "FileTable:", "Heap:", "",
-                "ExeStack:", "SymTable:", "v --> 2", "Out:", "2", "FileTable:", "Heap:", "");
+        var s0 = logBlock(List.of("(int v; (v = 2; print(v)))"), List.of(), List.of());
+        var s1 = logBlock(List.of("int v", "(v = 2; print(v))"), List.of(), List.of());
+        var s2 = logBlock(List.of("(v = 2; print(v))"), List.of("v --> 0"), List.of());
+        var s3 = logBlock(List.of("v = 2", "print(v)"), List.of("v --> 0"), List.of());
+        var s4 = logBlock(List.of("print(v)"), List.of("v --> 2"), List.of());
+        var s5 = logBlock(List.of(), List.of("v --> 2"), List.of("2"));
+        List<String> expected = new ArrayList<>(s0);
+        // after every step the state is logged twice: before and after the garbage collection
+        for (var state : List.of(s1, s2, s3, s4, s5)) {
+            expected.addAll(state);
+            expected.addAll(state);
+        }
         assertEquals(expected, Files.readAllLines(logFile()));
     }
 
@@ -358,7 +378,7 @@ class ControllerTest {
     void runningTwiceOnTheSameLogFileAppends() throws Exception {
         run(Examples.EX1);
         run(Examples.EX1);
-        assertEquals(12, Files.readString(logFile()).split("ExeStack:", -1).length - 1);
+        assertEquals(22, Files.readString(logFile()).split("ExeStack:", -1).length - 1);
     }
 
     @Test
@@ -367,5 +387,35 @@ class ControllerTest {
         var repo = new Repository(state, dir.resolve("no-such-folder").resolve("log.txt").toString());
         assertThrows(interpreter.exceptions.RepositoryException.class,
                 () -> new Controller(repo, false).allStep());
+    }
+    @Test
+    void locationsNoVariableRefersToAreRemovedFromTheHeapAfterTheStep() throws Exception {
+        // Ref int v; new(v, 1); new(v, 2): the location 1 is garbage as soon as v points to 2
+        IStmt program = new CompStmt(new VarDeclStmt("v", new RefType(new IntType())),
+                new CompStmt(new NewStmt("v", num(1)), new NewStmt("v", num(2))));
+        PrgState state = run(program);
+        assertEquals("{2 -> 2}", state.getHeap().toString());
+        assertEquals(new RefValue(2, new IntType()), state.getSymTable().lookup("v"));
+    }
+
+    @Test
+    void theLogShowsTheHeapBeforeAndAfterTheCollection() throws Exception {
+        IStmt program = new CompStmt(new VarDeclStmt("v", new RefType(new IntType())),
+                new CompStmt(new NewStmt("v", num(1)), new NewStmt("v", num(2))));
+        run(program);
+        List<String> states = List.of(Files.readString(logFile()).split("\n\n"));
+        int before = -1;
+        for (int i = 0; i < states.size(); i++)
+            if (states.get(i).contains("1 --> 1\n2 --> 2")) { before = i; break; }
+        assertTrue(before >= 0, "a state with both locations is logged");
+        String after = states.get(before + 1);
+        assertFalse(after.contains("1 --> 1"));   // the garbage was removed ...
+        assertTrue(after.contains("2 --> 2"));    // ... the live location was not
+    }
+
+    @Test
+    void theHeapOfAProgramWithoutGarbageIsNotChangedByTheCollector() throws Exception {
+        IStmt program = new CompStmt(new VarDeclStmt("v", new RefType(new IntType())), new NewStmt("v", num(5)));
+        assertEquals("{1 -> 5}", run(program).getHeap().toString());
     }
 }
