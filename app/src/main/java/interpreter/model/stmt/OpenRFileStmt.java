@@ -14,7 +14,7 @@ import java.io.IOException;
 public record OpenRFileStmt(IExp exp) implements IStmt {
     @Override
     public PrgState execute(PrgState state) throws MyException {
-        if (!(exp.eval(state.getSymTable()) instanceof StringValue fileName))
+        if (!(exp.eval(state.getSymTable(), state.getHeap()) instanceof StringValue fileName))
             throw new StatementException("openRFile: " + exp + " is not a string");
         var fileTable = state.getFileTable();
         if (fileTable.isDefined(fileName))

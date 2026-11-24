@@ -3,7 +3,9 @@ package interpreter.model.exp;
 import interpreter.exceptions.ExpressionException;
 import interpreter.exceptions.MyException;
 import interpreter.model.adt.IDictionary;
+import interpreter.model.adt.IHeap;
 import interpreter.model.adt.MyDictionary;
+import interpreter.model.adt.MyHeap;
 import interpreter.model.value.BoolValue;
 import interpreter.model.value.IValue;
 import interpreter.model.value.IntValue;
@@ -16,9 +18,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RelationalExpTest {
     private final IDictionary<String, IValue> symTable = new MyDictionary<>();
+    private final IHeap heap = new MyHeap();
 
     private IValue eval(RelOp op, int a, int b) throws MyException {
-        return new RelationalExp(op, num(a), num(b)).eval(symTable);
+        return new RelationalExp(op, num(a), num(b)).eval(symTable, heap);
     }
 
     private static final BoolValue TRUE = new BoolValue(true);
@@ -78,34 +81,34 @@ class RelationalExpTest {
     @Test
     void booleanFirstOperandThrows() {
         IExp e = new RelationalExp(RelOp.LT, bool(true), num(1));
-        var ex = assertThrows(ExpressionException.class, () -> e.eval(symTable));
+        var ex = assertThrows(ExpressionException.class, () -> e.eval(symTable, heap));
         assertEquals("first operand is not an integer", ex.getMessage());
     }
 
     @Test
     void stringSecondOperandThrows() {
         IExp e = new RelationalExp(RelOp.EQ, num(1), str("1"));
-        var ex = assertThrows(ExpressionException.class, () -> e.eval(symTable));
+        var ex = assertThrows(ExpressionException.class, () -> e.eval(symTable, heap));
         assertEquals("second operand is not an integer", ex.getMessage());
     }
 
     @Test
     void undefinedVariableOperandThrows() {
         IExp e = new RelationalExp(RelOp.GE, new VarExp("x"), num(1));
-        assertThrows(ExpressionException.class, () -> e.eval(symTable));
+        assertThrows(ExpressionException.class, () -> e.eval(symTable, heap));
     }
 
     @Test
     void variableOperandsAreLookedUp() throws MyException {
         symTable.put("a", new IntValue(5));
         symTable.put("b", new IntValue(7));
-        assertEquals(TRUE, new RelationalExp(RelOp.LT, new VarExp("a"), new VarExp("b")).eval(symTable));
+        assertEquals(TRUE, new RelationalExp(RelOp.LT, new VarExp("a"), new VarExp("b")).eval(symTable, heap));
     }
 
     @Test
     void operandsMayBeArithmeticExpressions() throws MyException {
         IExp sum = new ArithExp(ArithOp.ADD, num(2), num(3));
-        assertEquals(TRUE, new RelationalExp(RelOp.EQ, sum, num(5)).eval(symTable));
+        assertEquals(TRUE, new RelationalExp(RelOp.EQ, sum, num(5)).eval(symTable, heap));
     }
 
     @Test

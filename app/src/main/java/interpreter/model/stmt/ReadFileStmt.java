@@ -22,7 +22,7 @@ public record ReadFileStmt(IExp exp, String varName) implements IStmt {
             throw new StatementException("readFile: variable " + varName + " was not declared");
         if (!(symTable.lookup(varName) instanceof IntValue))
             throw new StatementException("readFile: variable " + varName + " is not of type int");
-        if (!(exp.eval(symTable) instanceof StringValue fileName))
+        if (!(exp.eval(symTable, state.getHeap()) instanceof StringValue fileName))
             throw new StatementException("readFile: " + exp + " is not a string");
         var fileTable = state.getFileTable();
         if (!fileTable.isDefined(fileName))
