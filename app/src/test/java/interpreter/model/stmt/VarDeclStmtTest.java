@@ -72,4 +72,25 @@ class VarDeclStmtTest {
     void toStringOfAStringDeclaration() {
         assertEquals("string s", new VarDeclStmt("s", new interpreter.model.type.StringType()).toString());
     }
+
+    @Test
+    void declaringAReferenceVariableGivesItTheNullReference() throws MyException {
+        var refInt = new interpreter.model.type.RefType(new IntType());
+        new VarDeclStmt("x", refInt).execute(state);
+        assertEquals(new interpreter.model.value.RefValue(0, new IntType()), state.getSymTable().lookup("x"));
+    }
+
+    @Test
+    void declaringANestedReferenceVariableGivesNullOfTheInnerReferenceType() throws MyException {
+        var refRefInt = new interpreter.model.type.RefType(new interpreter.model.type.RefType(new IntType()));
+        new VarDeclStmt("x", refRefInt).execute(state);
+        assertEquals(new interpreter.model.value.RefValue(0, new interpreter.model.type.RefType(new IntType())),
+                state.getSymTable().lookup("x"));
+    }
+
+    @Test
+    void toStringOfAReferenceDeclaration() {
+        var refInt = new interpreter.model.type.RefType(new IntType());
+        assertEquals("Ref(int) x", new VarDeclStmt("x", refInt).toString());
+    }
 }
