@@ -448,4 +448,73 @@ class ControllerTest {
         for (String state : log.split("\n\n"))
             if (state.startsWith(marker)) assertTrue(state.contains("Heap:\n1 --> 20\n2 --> (1, int)\n3 --> 30"));
     }
+
+    // ----- the examples of A4 (section 1.4 of the lab) -----
+
+    @Test
+    void example6EndsWithTheExpectedHeapSymTableAndOut() throws MyException {
+        PrgState state = run(Examples.EX6);
+        assertEquals("{1 -> 20, 2 -> (1, int)}", state.getHeap().toString());
+        assertEquals("{v -> (1, int), a -> (2, Ref(int))}", state.getSymTable().toString());
+        assertEquals("{(1, int), (2, Ref(int))}", state.getOut().toString());
+    }
+
+    @Test
+    void example7PrintsTwentyAndTwentyFive() throws MyException {
+        PrgState state = run(Examples.EX7);
+        assertEquals("{1 -> 20, 2 -> (1, int)}", state.getHeap().toString());
+        assertEquals("{v -> (1, int), a -> (2, Ref(int))}", state.getSymTable().toString());
+        assertEquals("{20, 25}", state.getOut().toString());
+    }
+
+    @Test
+    void example8PrintsTwentyAndThirtyFive() throws MyException {
+        PrgState state = run(Examples.EX8);
+        assertEquals("{1 -> 30}", state.getHeap().toString());
+        assertEquals("{v -> (1, int)}", state.getSymTable().toString());
+        assertEquals("{20, 35}", state.getOut().toString());
+    }
+
+    @Test
+    void example9PrintsTwentyWithTheSafeGarbageCollector() throws MyException {
+        PrgState state = run(Examples.EX9);
+        assertEquals("{20}", state.getOut().toString());
+        assertEquals("{v -> (3, int), a -> (2, Ref(int))}", state.getSymTable().toString());
+        assertEquals("{1 -> 20, 2 -> (1, int), 3 -> 30}", state.getHeap().toString());
+    }
+
+    @Test
+    void example10CountsDown() throws MyException {
+        PrgState state = run(Examples.EX10);
+        assertEquals("{4, 3, 2, 1, 0}", state.getOut().toString());
+        assertEquals("{v -> 0}", state.getSymTable().toString());
+        assertTrue(state.getExeStack().isEmpty());
+    }
+
+    @Test
+    void example10LogsEveryIterationOfTheLoop() throws Exception {
+        run(Examples.EX10);
+        String log = Files.readString(logFile());
+        // the loop is on top of the stack once per evaluation of the condition (5 times) and every state
+        // is logged twice (before and after the collection)
+        long onTop = log.lines().filter(l -> l.startsWith("(while ((v > 0))")).count();
+        assertTrue(onTop >= 10);
+    }
+
+    @Test
+    void aLoopAndTheHeapTogether() throws MyException {
+        // Ref int v; new(v, 0); while (rH(v) < 3) wH(v, rH(v) + 1); print(rH(v))
+        var refInt = new RefType(new IntType());
+        var read = new interpreter.model.exp.ReadHeapExp(new VarExp("v"));
+        IStmt program = new CompStmt(new VarDeclStmt("v", refInt),
+                new CompStmt(new NewStmt("v", num(0)),
+                        new CompStmt(new interpreter.model.stmt.WhileStmt(
+                                new interpreter.model.exp.RelationalExp(interpreter.model.exp.RelOp.LT, read, num(3)),
+                                new interpreter.model.stmt.WriteHeapStmt("v",
+                                        new interpreter.model.exp.ArithExp(interpreter.model.exp.ArithOp.ADD, read, num(1)))),
+                                new PrintStmt(read))));
+        PrgState state = run(program);
+        assertEquals("{3}", state.getOut().toString());
+        assertEquals("{1 -> 3}", state.getHeap().toString());
+    }
 }

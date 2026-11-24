@@ -6,13 +6,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ExamplesTest {
     @Test
-    void thereAreFiveExamplesInOrder() {
-        assertEquals(5, Examples.all().size());
+    void thereAreTenExamplesInOrder() {
+        assertEquals(10, Examples.all().size());
         assertSame(Examples.EX1, Examples.all().get(0));
         assertSame(Examples.EX2, Examples.all().get(1));
         assertSame(Examples.EX3, Examples.all().get(2));
         assertSame(Examples.EX4, Examples.all().get(3));
         assertSame(Examples.EX5, Examples.all().get(4));
+        assertSame(Examples.EX6, Examples.all().get(5));
+        assertSame(Examples.EX7, Examples.all().get(6));
+        assertSame(Examples.EX8, Examples.all().get(7));
+        assertSame(Examples.EX9, Examples.all().get(8));
+        assertSame(Examples.EX10, Examples.all().get(9));
     }
 
     // the strings below are the menu lines of the Lab 5 document (section 2.7)
@@ -56,5 +61,35 @@ class ExamplesTest {
     void theFileExampleTakesTheFileNameAsAParameter() {
         assertTrue(Examples.fileExample("data.txt").toString().contains("\"data.txt\""));
         assertNotEquals(Examples.fileExample("a.in"), Examples.fileExample("b.in"));
+    }
+
+    @Test
+    void example6IsDisplayedInInfixForm() {
+        assertEquals("(Ref(int) v; (new(v, 20); (Ref(Ref(int)) a; (new(a, v); (print(v); print(a)"
+                + ")".repeat(5), Examples.EX6.toString());
+    }
+
+    @Test
+    void example7IsDisplayedInInfixForm() {
+        assertEquals("(Ref(int) v; (new(v, 20); (Ref(Ref(int)) a; (new(a, v); "
+                + "(print(rH(v)); print((rH(rH(a)) + 5))" + ")".repeat(5), Examples.EX7.toString());
+    }
+
+    @Test
+    void example8IsDisplayedInInfixForm() {
+        assertEquals("(Ref(int) v; (new(v, 20); (print(rH(v)); (wH(v, 30); print((rH(v) + 5))"
+                + ")".repeat(4), Examples.EX8.toString());
+    }
+
+    @Test
+    void example9IsDisplayedInInfixForm() {
+        assertEquals("(Ref(int) v; (new(v, 20); (Ref(Ref(int)) a; (new(a, v); (new(v, 30); print(rH(rH(a)))"
+                + ")".repeat(5), Examples.EX9.toString());
+    }
+
+    @Test
+    void example10IsDisplayedInInfixForm() {
+        assertEquals("(int v; (v = 4; ((while ((v > 0)) (print(v); v = (v - 1))); print(v))))",
+                Examples.EX10.toString());
     }
 }
